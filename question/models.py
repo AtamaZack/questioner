@@ -30,4 +30,12 @@ class Comment(models.Model):
 
     def __str__(self):
         """Return a readable representation of the comment model instance."""
-        return "{}".format(self.comment)
+        return (self.comment)
+
+
+class Mycomment(models.Model):
+    comment = models.TextField()
+    date_modified = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = False

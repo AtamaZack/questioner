@@ -68,6 +68,27 @@ class TestSignup(APITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, 400)
 
+    def test_signup_user_with_short_password(self):
+        """
+        Ensure user cannot signup with a password shorter than 8 chars.
+        """
+        data = {"username": "bisonlou", "password": "123",
+                "email": "bisonlou@gmail.com"}
+        url = reverse("signup")
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_signup_user_with_common_password(self):
+        """
+        Ensure user cannot signup with a password
+        similar to his username or among common passwords.
+        """
+        data = {"username": "bisonlou", "password": 'bison',
+                "email": "bisonlou@gmail.com"}
+        url = reverse("signup")
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 400)
+
     def test_signup_duplicate_user_with_valid_data(self):
         """
         Ensure user can sign up with valid data.

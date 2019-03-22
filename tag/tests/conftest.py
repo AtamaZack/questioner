@@ -25,15 +25,17 @@ def admin_user():
 
 @pytest.mark.django_db
 @pytest.fixture
-def a_tag(admin_user):
-    return Tag.objects.create(title="React", created_by=admin_user)
+def user1():
+    return get_user_model().objects.create(
+        username="user1", email="user1@questioner.com", is_superuser=False
+    )
 
 
 @pytest.mark.django_db
 @pytest.fixture
-def user1():
+def user2():
     return get_user_model().objects.create(
-        username="user1", email="user1@questioner.com", is_superuser=False
+        username="user2", email="user2@questioner.com", is_superuser=False
     )
 
 
@@ -53,7 +55,38 @@ def meetup1(admin_user):
 
 @pytest.mark.django_db
 @pytest.fixture
+def tag_objs(admin_user):
+    tags = []
+    for tag in ["sports", "Django", "API"]:
+        tags.append(Tag.objects.create(title=tag, created_by=admin_user))
+    return tags
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def disabled_tag(admin_user):
+    return Tag.objects.create(
+        title="Javascript", created_by=admin_user, active=False
+    )
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def a_tag(admin_user):
+    return Tag.objects.create(title="React", created_by=admin_user)
+
+
+@pytest.mark.django_db
+@pytest.fixture
 def tagged_meetup(user1, meetup1, a_tag):
     return MeetingTag.objects.create(
         tag=a_tag, meetup=meetup1, created_by=user1
+    )
+
+
+@pytest.mark.django_db
+@pytest.fixture
+def meetup_tag(user1, a_tag, meetup1):
+    return MeetingTag.objects.create(
+        meetup=meetup1, tag=a_tag, created_by=user1
     )

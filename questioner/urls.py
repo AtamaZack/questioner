@@ -22,7 +22,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from meetup import views as meetup_views
+from tag import views as tag_views
 from . import views
 
 
@@ -47,8 +47,8 @@ urlpatterns = [
     path("meetups/", include("meetup.urls")),
     path("meetups/", include("question.urls")),
     path("meetups/", include("vote.urls")),
-    path("tags/", meetup_views.TagList.as_view(), name="tags"),
-    path("tags/<int:tag_id>", meetup_views.ATag.as_view(), name="tag"),
+    path("tags/", tag_views.TagList.as_view(), name="tags"),
+    path("tags/<int:tag_id>", tag_views.ATag.as_view(), name="tag"),
     path("admin/", admin.site.urls),
     path('session/', include('rest_framework.urls', namespace='rest_framework')),
     path(

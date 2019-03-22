@@ -3,7 +3,6 @@ import json
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
-
 from meetup.models import Meeting
 from question.models import Question
 
@@ -184,7 +183,6 @@ class TestQuestionViews(TestCase):
 
     def test_user_can_get_meetup_questions(self):
         self.client.force_authenticate(user=self.user1)
-
         url = f"/meetups/{self.meetup.id}/questions/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)

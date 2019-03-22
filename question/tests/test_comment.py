@@ -39,6 +39,12 @@ class TestCommentList(APIUserAPITestCase):
     @pytest.mark.django_db
     def test_get_comment_list(self):
         url = reverse('comment', kwargs={'meetup_id': 1, 'question_id': 1})
+        data = {
+            "comment": "blabla....",
+            "question": 1
+        }
+        self.client.post(url, data, format="json")
+        url = reverse('comment', kwargs={'meetup_id': 1, 'question_id': 1})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 

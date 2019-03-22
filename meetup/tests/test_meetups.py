@@ -154,7 +154,7 @@ def test_edit_meetup_with_missing_data(api_client, db, admin_user, meetup1):
 
     if not response.data == {
         "status": 400,
-        "error": {"title": ["This field is required."], "body": ["This field is required."], "created_by": ["This field is required."]},
+        "error": {"title": ["This field is required."], "body": ["This field is required."]},
     }:
         raise AssertionError()
 
