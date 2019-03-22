@@ -234,45 +234,51 @@ class OneQuestion(APIView):
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-
             question = get_object_or_404(
-                Question,
-                id=question_id,
-                meetup_id=meetup_id,
-                delete_status=False,
-            )
-            serializer = QuestionSerializer(question, many=False)
-
-            data=dict(serializer.data)
-            data["date_modified"] = timezone.now()
-            data["title"] = request.data.get("title", None)
-            data["body"] = request.data.get("body", None)
-
-            serializer = QuestionSerializer(question, data)
-            if serializer.is_valid():
-                serializer.save()
-
-                Mserializer = MeetingSerializer(meeting, many=True)
-
-                qn_dict = dict(serializer.data)
-                qn_dict["created_by_name"] = current_user.username
-                qn_dict["meetup_name"] = Mserializer.data[0]["title"]
-                return Response(
-                    data={
-                        "status": status.HTTP_200_OK,
-                        "data": [
-                            {
-                                "question": qn_dict,
-                                "success": "Question successfully edited",
-                            }
-                        ],
-                    },
-                    status=status.HTTP_200_OK,
+                    Question,
+                    id=question_id,
+                    meetup_id=meetup_id,
+                    delete_status=False,
                 )
+            if str(question.created_by) == str(current_user.username):
+                serializer = QuestionSerializer(question, many=False)
 
+                data=dict(serializer.data)
+                data["date_modified"] = timezone.now()
+                data["title"] = request.data.get("title", None)
+                data["body"] = request.data.get("body", None)
+
+                serializer = QuestionSerializer(question, data)
+                if serializer.is_valid():
+                    serializer.save()
+
+                    Mserializer = MeetingSerializer(meeting, many=True)
+
+                    qn_dict = dict(serializer.data)
+                    qn_dict["created_by_name"] = current_user.username
+                    qn_dict["meetup_name"] = Mserializer.data[0]["title"]
+                    return Response(
+                        data={
+                            "status": status.HTTP_200_OK,
+                            "data": [
+                                {
+                                    "question": qn_dict,
+                                    "success": "Question successfully edited",
+                                }
+                            ],
+                        },
+                        status=status.HTTP_200_OK,
+                    )
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                )
             return Response(
-                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+                    data={
+                        "status": status.HTTP_401_UNAUTHORIZED,
+                        "error": "You cannot edit a question created by another user",
+                    },
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
         return Response(
             {"error": "invalid meetup id"}, status=status.HTTP_400_BAD_REQUEST
         )

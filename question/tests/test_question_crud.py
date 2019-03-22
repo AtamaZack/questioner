@@ -224,6 +224,16 @@ class TestQuestionViews(TestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_editing_a_question_not_question_owner(self):
+        self.client.force_authenticate(user=self.user2)
+        url = f"/meetups/{int(self.qn_db.meetup_id.id)}/questions/{int(self.qn_db.id)}/"
+        response = self.client.put(
+            url,
+            content_type="application/json",
+            data=json.dumps(self.edit_qn_data),
+        )
+        self.assertEqual(response.status_code, 401)
+
     def test_editing_a_question(self):
         self.client.force_authenticate(user=self.user1)
         url = f"/meetups/{int(self.qn_db.meetup_id.id)}/questions/{int(self.qn_db.id)}/"

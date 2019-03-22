@@ -150,6 +150,7 @@ SWAGGER_SETTINGS = {
             "type": "apiKey",
             "name": "Token Authorization",
             "in": "header",
+            "bearerFormat": "JWT",
         }
     },
 }
