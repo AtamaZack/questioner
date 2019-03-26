@@ -5,7 +5,8 @@ from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 
 from meetup.models import Meeting
-from question.models import Question, Comment
+from question.models import Question
+from comment.models import Comment
 
 UserModel = get_user_model()
 

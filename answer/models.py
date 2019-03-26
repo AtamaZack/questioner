@@ -20,4 +20,4 @@ class Answers(models.Model):
         unique_together = ("body", "question", "meetup")
 
     def __str__(self):
-        return f"{self.body}"
+        return "{}".format(self.body)

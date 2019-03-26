@@ -235,7 +235,7 @@ class TestQuestionViews(TestCase):
 
     def test_editing_a_question(self):
         self.client.force_authenticate(user=self.user1)
-        url = f"/meetups/{int(self.qn_db.meetup_id.id)}/questions/{int(self.qn_db.id)}/"
+        url = f"/meetups/{self.meetup.id}/questions/{self.qn_db.id}/"
         response = self.client.put(
             url,
             content_type="application/json",

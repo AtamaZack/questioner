@@ -48,6 +48,7 @@ urlpatterns = [
     path("meetups/", include("question.urls")),
     path("meetups/", include("answer.urls")),
     path("meetups/", include("vote.urls")),
+    path("meetups/", include("comment.urls")),
     path("tags/", tag_views.TagList.as_view(), name="tags"),
     path("tags/<int:tag_id>", tag_views.ATag.as_view(), name="tag"),
     path("admin/", admin.site.urls),
@@ -61,6 +62,7 @@ urlpatterns = [
         schema_view.with_ui("redoc", cache_timeout=0),
         name="schema-redoc",
     ),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 
 format_suffix_patterns(urlpatterns, suffix_required=False, allowed=None)

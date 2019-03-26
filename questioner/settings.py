@@ -19,7 +19,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "n%fg(03shlp=ipqb_u%_o@=&7bhcwq8hpedk-sn)+5tnx6#*kb"
+SECRET_KEY = "KLASGKHKSDFGSDAFJAKJdsghdsf"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -49,12 +49,13 @@ INSTALLED_APPS = [
     "rest_framework_swagger",
     "drf_yasg",
     "answer.apps.AnswersConfig",
+    "comment.apps.CommentConfig",
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
-        "questioner.auth.auth_default.BearerAuthentication"
+        "questioner.auth.auth_default.BearerAuthentication",
     ],
     "EXCEPTION_HANDLER": "questioner.utils.exception_handler.custom_exception_handler",
 }

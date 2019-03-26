@@ -1,19 +1,20 @@
+from operator import itemgetter
 from django.contrib.auth.models import User
 from django.db.models import Q
-from operator import itemgetter
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from meetup.models import Meeting
 from meetup.serializers import MeetingSerializer
-from question.models import Question, Comment
-from question.serializers import (QuestionSerializer, CommentSerializer)
+from question.models import Question
+from comment.models import Comment
+from answer.models import Answers
+from question.serializers import QuestionSerializer
 from vote.models import Vote
 
 
@@ -54,6 +55,11 @@ class Questions(APIView):
                         comments for comments in Comment.objects.filter(question=result["id"])
                     ]
                 )
+                answers_total = len(
+                    [
+                        answers for answers in Answers.objects.filter(question=result["id"])
+                    ]
+                )
                 up_votes = len(
                     [
                         vote
@@ -78,7 +84,8 @@ class Questions(APIView):
                 result["created_by_name"] = user.username
 
                 result["meetup_name"] = Mserializer.data[0]["title"]
-                result['comments'] = comments_total
+                result['comments_count'] = comments_total
+                result['answers_count'] = answers_total
                 result["votes"] = votes
 
                 all_questions.append(result)
@@ -122,7 +129,7 @@ class Questions(APIView):
             serializer = QuestionSerializer(data=request.data)
             if serializer.is_valid():
 
-                serializer.save(created_by=current_user,meetup_id=meeting)
+                serializer.save(created_by=current_user, meetup_id=meeting)
                 qn_dict = dict(serializer.data)
                 qn_dict["created_by"] = current_user.id
                 qn_dict["created_by_name"] = current_user.username
@@ -184,6 +191,11 @@ class OneQuestion(APIView):
                     comments for comments in Comment.objects.filter(question=question_id)
                 ]
             )
+            answers_total = len(
+                [
+                    answers for answers in Answers.objects.filter(question=question_id)
+                ]
+            )
             up_votes = len(
                 [
                     votes
@@ -208,6 +220,7 @@ class OneQuestion(APIView):
             result["created_by_name"] = user.username
             result["meetup_name"] = Mserializer.data[0]["title"]
             result['comments'] = comments_total
+            result['answers_count'] = answers_total
             result["votes"] = votes
 
             return Response(
@@ -347,166 +360,4 @@ class OneQuestion(APIView):
                 )
         return Response(
             {"error": "invalid meetup id"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-class CommentList(APIView):
-    """
-    List all comments, or create a new comment.
-    """
-
-    permission_classes = (IsAuthenticated,)
-    serializer_class = CommentSerializer
-
-    def get(self, request, **kwargs):
-        """Return a list of comments."""
-        meetup = Meeting.objects.filter(id=self.kwargs['meetup_id'])
-        question = Question.objects.filter(id=self.kwargs['question_id'])
-        if meetup:
-            if not question:
-                return Response({
-                    "status": status.HTTP_404_NOT_FOUND,
-                    "error": "Question not found."
-                }, status=status.HTTP_404_NOT_FOUND)
-            queryset = Comment.objects.filter(question=self.kwargs['question_id'])
-            serializer = CommentSerializer(queryset, many=True)
-
-            data = []
-            for comment in serializer.data:
-                user = User.objects.filter(Q(id=comment["created_by"])).distinct().first()
-                comment["created_by_name"] = user.username
-                comment["question_name"] = question.first().title
-                data.append(comment)
-
-            return Response({
-                "status": status.HTTP_200_OK,
-                "comments": data
-            })
-        return Response({
-            "status": status.HTTP_404_NOT_FOUND,
-            "error": "Meetup not found."
-        }, status=status.HTTP_404_NOT_FOUND)
-
-
-    def post(self, request, **kwargs):
-        """Add a comment to a particular question."""
-        meetup = Meeting.objects.filter(id=self.kwargs['meetup_id'])
-        question = Question.objects.filter(id=self.kwargs['question_id'])
-        if meetup:
-            if not question:
-                return Response({
-                    "status": status.HTTP_404_NOT_FOUND,
-                    "error": "Question not found."
-                }, status=status.HTTP_404_NOT_FOUND)
-
-            serializer = CommentSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save(created_by_id=request.user.id, question=question.first())
-                data = dict(serializer.data)
-                data["question_name"] = question.first().title
-                return Response({
-                    "comment": data,
-                    "message": "Comment successfully created."
-                }, status=status.HTTP_201_CREATED)
-            return Response({
-                        "status": status.HTTP_400_BAD_REQUEST,
-                        "error": "Fields cannot be left empty or missing."
-            }, status=status.HTTP_400_BAD_REQUEST)
-        return Response({
-            "status": status.HTTP_404_NOT_FOUND,
-            "error": "Meetup not found."
-        }, status=status.HTTP_404_NOT_FOUND)
-
-
-class CommentDetail(APIView):
-    """
-    Retrieve, update or delete a comment instance.
-    """
-
-    permission_classes = (IsAuthenticated,)
-    serializer_class = CommentSerializer
-
-    @classmethod
-    def get_object(cls, pk):
-        try:
-            return Comment.objects.get(pk=pk)
-        except Comment.DoesNotExist:
-            raise NotFound({"error": "Comment not found."})
-
-    def get(self, request, pk, **kwargs):
-        """Return a single comment to a question."""
-        if not Meeting.objects.filter(id=self.kwargs['meetup_id']):
-            return Response({
-                "status": status.HTTP_404_NOT_FOUND,
-                "error": "Meetup not found."
-            }, status=status.HTTP_404_NOT_FOUND)
-
-        question = Question.objects.filter(id=self.kwargs['question_id'])
-        if not question:
-            return Response({
-                "status": status.HTTP_404_NOT_FOUND,
-                "error": "Question not found."
-            }, status=status.HTTP_404_NOT_FOUND)
-        if Comment.objects.filter(question=self.kwargs['question_id']):
-            comment = self.get_object(pk)
-            serializer = CommentSerializer(comment)
-
-            data = dict(serializer.data)
-            user = User.objects.filter(Q(id=data["created_by"])).distinct().first()
-            data["created_by_name"] = user.username
-            data["question_name"] = question.first().title
-
-            return Response({
-                "status": status.HTTP_200_OK,
-                "comment": data
-            })
-
-    def put(self, request, pk, **kwargs):
-        """Update a single comment."""
-        if Meeting.objects.filter(id=self.kwargs['meetup_id']):
-            if Question.objects.filter(id=self.kwargs['question_id']):
-                comment = self.get_object(pk)
-
-                serializer = CommentSerializer(comment, data=request.data)
-                if serializer.is_valid():
-                    serializer.save()
-                    return Response({
-                        "status": status.HTTP_200_OK,
-                        "message": "Comment successfully updated."
-                    })
-            return Response({
-                "status": status.HTTP_404_NOT_FOUND,
-                "error": "Question not found."
-            }, status=status.HTTP_404_NOT_FOUND)
-        return Response({
-            "status": status.HTTP_404_NOT_FOUND,
-            "error": "Meetup not found."
-        }, status=status.HTTP_404_NOT_FOUND)
-
-    def delete(self, request, pk, **kwargs):
-        """Delete a single question."""
-        if Meeting.objects.filter(id=self.kwargs['meetup_id']):
-            if Question.objects.filter(id=self.kwargs['question_id']):
-                if Comment.objects.filter(question=self.kwargs['question_id']):
-                    comment = self.get_object(pk)
-                    comment.delete()
-                    return Response(
-                        {
-                            "status": status.HTTP_204_NO_CONTENT,
-                            "message": "Comment successfully deleted."
-                        },
-                        status=status.HTTP_204_NO_CONTENT
-                    )
-            return Response(
-                {
-                    "status": status.HTTP_404_NOT_FOUND,
-                    "error": "Question not found."
-                },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        return Response(
-            {
-                "status": status.HTTP_404_NOT_FOUND,
-                "error": "Meetup not found."
-            },
-            status=status.HTTP_404_NOT_FOUND
         )

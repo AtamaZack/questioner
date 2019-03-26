@@ -12,4 +12,4 @@ class Meeting(models.Model):
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __str__(self):
-        return f"{self.title}"
+        return "{}".format(self.title)
