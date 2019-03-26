@@ -39,15 +39,16 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "accounts.apps.AccountsConfig",
     "meetup.apps.MeetupConfig",
     "tag.apps.TagConfig",
     "rest_framework",
     "rest_framework.authtoken",
     "question.apps.QuestionConfig",
     "vote.apps.VoteConfig",
-    "accounts.apps.AccountsConfig",
     "rest_framework_swagger",
     "drf_yasg",
+    "answer.apps.AnswersConfig",
 ]
 
 REST_FRAMEWORK = {

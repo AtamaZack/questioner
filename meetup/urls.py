@@ -1,7 +1,7 @@
 from django.urls import path
 
-from . import views
 from tag import views as tag_views
+from . import views
 
 urlpatterns = [
     # /meetups/

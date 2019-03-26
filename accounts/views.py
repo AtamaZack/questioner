@@ -1,10 +1,15 @@
 from rest_framework import status
+from django.contrib.auth import login
 from rest_framework.views import APIView
+from django.contrib.auth.models import User
 from rest_framework.response import Response
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
-from .serializers import UserSerializer, LoginSerializer
 from django.contrib.auth.password_validation import ValidationError
+from .serializers import (
+    UserSerializer,
+    LoginSerializer,
+    UserListSerializer)
 
 
 class SignUp(APIView):
@@ -54,6 +59,30 @@ class SignUp(APIView):
         )
 
 
+class Users(APIView):
+    """
+    Get:
+    Lists all users
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, *args, **kwags):
+        current_user = self.request.user
+        if current_user.is_superuser:
+            users = User.objects.all()
+            serializer = UserListSerializer(users, many=True)
+
+            return Response(data={"status": 200,
+                            "data": serializer.data},
+                            status=status.HTTP_200_OK
+                            )
+
+        return Response(data={"status": 403,
+                        "error": "Insurfficient rights!"},
+                        status=status.HTTP_403_FORBIDDEN
+                        )
+
+
 class Login(APIView):
     """
     post:
@@ -73,13 +102,14 @@ class Login(APIView):
 
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        user = User.objects.get(username=serializer.data['username'])
+        login(request, user)
 
         return Response(
             data={"Username": serializer.data['username'],
                   "Email": serializer.data['email'],
                   "token": serializer.data['token']},
             status=status.HTTP_200_OK
-
         )
 
 
@@ -107,4 +137,3 @@ class profile(APIView):
             },
             status=status.HTTP_200_OK,
         )
-

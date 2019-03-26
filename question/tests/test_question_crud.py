@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework.test import APIClient
+
 from meetup.models import Meeting
 from question.models import Question
 
@@ -163,7 +164,7 @@ class TestQuestionViews(TestCase):
     def test_user_can_get_a_question(self):
         self.client.force_authenticate(user=self.user1)
 
-        url = f"/meetups/{int(self.qn_db.meetup_id.id)}/questions/{int(self.qn_db.id)}/"
+        url = f"/meetups/{self.meetup.id}/questions/{self.qn_db.id}/"
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -271,11 +272,7 @@ class TestQuestionViews(TestCase):
         )
 
         self.assertEqual(response1.status_code, 400)
-        self.assertTrue("This field may not be null." in str(response1.data["title"][0]))
-
-        self.assertEqual(response1.status_code, 400)
-        self.assertTrue("This field may not be null." in str(response2.data["body"][0]))
-
+    
     def test_user_cannot_delete_question_created_by_another_user(self):
         self.client.force_authenticate(user=self.user2)
         url = f"/meetups/{int(self.qn_db.meetup_id.id)}/questions/{int(self.qn_db.id)}/"

@@ -1,6 +1,8 @@
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
+
 from question.models import Question
+
 
 class Vote(models.Model):
     question_id = models.ForeignKey(Question, on_delete=models.CASCADE)

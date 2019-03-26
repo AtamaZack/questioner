@@ -41,6 +41,26 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "email", "password")
 
 
+class UserListSerializer(serializers.ModelSerializer):
+    """
+    Serializer to return user listing without critical information
+    """
+
+    class Meta:
+        model = User
+        fields = ("id",
+                  "username",
+                  "email",
+                  "first_name",
+                  "last_name",
+                  "is_staff",
+                  "is_active",
+                  "is_superuser",
+                  "last_login",
+                  "date_joined"
+                  )
+
+
 class LoginSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=False, allow_blank=True)
     token = serializers.CharField(allow_blank=True, read_only=True)

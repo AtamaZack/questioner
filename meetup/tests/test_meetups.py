@@ -93,9 +93,9 @@ def test_get_meetups(api_client, db, admin_user, meetup1, tagged_meetup):
         raise AssertionError()
 
     if (
-        len(response.data["data"][0]["meetup"]) != 1
-        or response.data["data"][0]["meetup"][0]["id"] != meetup1.id
-        or response.data["data"][0]["meetup"][0]["title"] != meetup1.title
+        len(response.data["data"][0]["meetups"]) != 1
+        or response.data["data"][0]["meetups"][0]["id"] != meetup1.id
+        or response.data["data"][0]["meetups"][0]["title"] != meetup1.title
     ):
         raise AssertionError()
 

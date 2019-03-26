@@ -10,6 +10,7 @@ from question.models import Question
 from vote.models import Vote
 from vote.serializers import VoteSerializer
 
+
 class UpVote(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -19,7 +20,7 @@ class UpVote(APIView):
             if Question.objects.filter(id=question_id):
                 current_user = request.user
 
-                data={}
+                data = {}
                 data["vote"] = request.data.get("vote", None)
                 data["question_id"] = question_id
                 data["voter_id"] = current_user.id
@@ -36,8 +37,8 @@ class UpVote(APIView):
                                 data={
                                     "status": status.HTTP_200_OK,
                                     "data": [{"success": "your up-vote has been cancelled"}],
-                                    },
-                                    status=status.HTTP_200_OK,
+                                },
+                                status=status.HTTP_200_OK,
                             )
                         my_vote = get_object_or_404(Vote, question_id=question_id, voter_id=current_user.id, vote=-1)
                         serializer = VoteSerializer(my_vote, data)
@@ -71,6 +72,7 @@ class UpVote(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+
 class DownVote(APIView):
     permission_classes = (IsAuthenticated,)
 
@@ -95,8 +97,8 @@ class DownVote(APIView):
                                 data={
                                     "status": status.HTTP_200_OK,
                                     "data": [{"success": "your up-vote has been cancelled"}],
-                                    },
-                                    status=status.HTTP_200_OK,
+                                },
+                                status=status.HTTP_200_OK,
                             )
                         my_vote = get_object_or_404(Vote, question_id=question_id, voter_id=current_user.id, vote=1)
                         serializer = VoteSerializer(my_vote, data)

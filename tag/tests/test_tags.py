@@ -34,7 +34,7 @@ def test_admin_user_cannot_create_tag_with_missing_title(api_client, db, admin_u
 
     if not response.data == {
         "status": 400,
-        "error": {"title": ["This field may not be null."]}
+        "error": {"title": ["This field is required."]}
     }:
         raise AssertionError()
 

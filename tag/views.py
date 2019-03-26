@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import User
 from django.db.models import ProtectedError, Q
 from django.shortcuts import get_object_or_404
@@ -8,10 +7,11 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from .models import MeetingTag
 from .models import Tag
-from .serializers import MeetingTagSerializer, MeetingTagSerializerClass
-from .serializers import TagSerializer, TagSerializerClass
+from .serializers import MeetingTagSerializer
+from .serializers import TagSerializer
 
 
 # list all tags or create a tag
@@ -25,7 +25,7 @@ class TagList(APIView):
     """
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = TagSerializerClass
+    serializer_class = TagSerializer
 
     @classmethod
     @swagger_auto_schema(
@@ -43,7 +43,6 @@ class TagList(APIView):
 
         tags = []
         for tag in serializer.data:
-
             user = User.objects.filter(Q(id=tag["created_by"])).distinct().first()
             tag["created_by_name"] = user.username
             tags.append(tag)
@@ -78,15 +77,12 @@ class TagList(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        data={}
-        data["title"] = request.data.get("title", None)
-        data["created_by"] = request.user.id
-
-        serializer = TagSerializer(data=data)
+        serializer = TagSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(created_by=request.user)
 
             data = dict(serializer.data)
+            data["created_by"] = request.user.id
             data["created_by_name"] = request.user.username
 
             return Response(
@@ -119,7 +115,7 @@ class ATag(APIView):
     """
 
     permission_classes = (IsAdminUser,)
-    serializer_class = TagSerializerClass
+    serializer_class = TagSerializer
 
     @classmethod
     @swagger_auto_schema(
@@ -171,7 +167,7 @@ class AddMeetupTag(APIView):
     """
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = MeetingTagSerializerClass
+    serializer_class = MeetingTagSerializer
 
     @classmethod
     @swagger_auto_schema(
@@ -188,8 +184,7 @@ class AddMeetupTag(APIView):
     )
     def post(cls, request, meeting_id):
 
-
-        data={}
+        data = {}
         data["tag"] = request.data["tag"]
         data["created_by"] = request.user.id
         data["meetup"] = meeting_id
@@ -217,7 +212,7 @@ class AddMeetupTag(APIView):
             )
 
         elif serializer.is_valid():
-            serializer.save()
+            serializer.save(created_by= request.user)
 
             data = dict(serializer.data)
             data["created_by_name"] = request.user.username
@@ -255,7 +250,7 @@ class AmeetupTag(APIView):
     """
 
     permission_classes = (IsAuthenticated,)
-    serializer_class = MeetingTagSerializerClass
+    serializer_class = MeetingTagSerializer
 
     @classmethod
     @swagger_auto_schema(
@@ -278,8 +273,8 @@ class AmeetupTag(APIView):
         serial_tag = serializer.data
 
         if not (
-            request.user.is_superuser
-            or (request.user.id == serial_tag["created_by"])
+                request.user.is_superuser
+                or (request.user.id == serial_tag["created_by"])
         ):
             return Response(
                 data={

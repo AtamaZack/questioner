@@ -1,23 +1,15 @@
 from rest_framework import serializers
-from question.models import Question, Comment, Mycomment
+from question.models import Question, Comment
 from vote.serializers import VoteSerializer
 
 
 class CommentSerializer(serializers.ModelSerializer):
     """Map the comment model instance into JSON format."""
-
-    created_by = serializers.ReadOnlyField(source='created_by.username')
-
     class Meta:
         """Map serializer fields to comment model fields."""
         model = Comment
         fields = "__all__"
-
-
-class CommentSerializerclass(serializers.ModelSerializer):
-    class Meta:
-        model = Mycomment
-        fields = "__all__"
+        read_only_fields = ("created_by", "question", )
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -28,10 +20,4 @@ class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
         fields = "__all__"
-
-
-class QuestionSerializerClass(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = "__all__"
-        read_only_fields = ["created_by", "meetup_id", "delete_status"]
+        read_only_fields = ("created_by", "meetup_id", "delete_status", )

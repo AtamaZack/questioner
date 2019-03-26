@@ -1,9 +1,9 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
-
+from tag.models import Tag,MeetingTag
 from meetup.models import Meeting
-from tag.models import Tag, MeetingTag
+
 
 
 @pytest.mark.django_db
@@ -22,13 +22,6 @@ def admin_user():
         is_superuser=True,
     )
 
-
-@pytest.mark.django_db
-@pytest.fixture
-def a_tag(admin_user):
-    return Tag.objects.create(title="React", created_by=admin_user)
-
-
 @pytest.mark.django_db
 @pytest.fixture
 def user1():
@@ -36,6 +29,26 @@ def user1():
         username="user1", email="user1@questioner.com", is_superuser=False
     )
 
+@pytest.mark.django_db
+@pytest.fixture
+def staff1():
+    return get_user_model().objects.create(
+        username="staff1", email="staff1@questioner.com", is_staff = True
+    )
+
+@pytest.mark.django_db
+@pytest.fixture
+def staff2():
+    return get_user_model().objects.create(
+        username="staff2", email="staff2@questioner.com", is_staff = True,is_superuser=False
+    )
+
+@pytest.mark.django_db
+@pytest.fixture
+def user2():
+    return get_user_model().objects.create(
+        username="user2", email="user2@questioner.com", is_superuser=False
+    )
 
 @pytest.mark.django_db
 @pytest.fixture
@@ -49,6 +62,11 @@ def meetup1(admin_user):
         created_by=admin_user,
         created_at="2019-03-07 12:21:39",
     )
+
+@pytest.mark.django_db
+@pytest.fixture
+def a_tag(admin_user):
+    return Tag.objects.create(title="React", created_by=admin_user)
 
 
 @pytest.mark.django_db
